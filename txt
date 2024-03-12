@@ -1,0 +1,15 @@
+stage('Send Email Notification') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
+            steps {
+                script {
+                    emailext attachLog: true,
+                            body: 'The build was successful. Please check the details in the attached log.',
+                            subject: "Build Successful: ${JOB_NAME} - Build #${BUILD_NUMBER}",
+                            to: 'manager@example.com',
+                            mimeType: 'text/html',
+                            recipientProviders: [[$class: 'RequesterRecipientProvider']]
+                }
+            }
+        }
