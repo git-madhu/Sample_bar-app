@@ -52,3 +52,43 @@ stage('Configure Gmail') {
                 }
             }
         }
+
+
+
+
+stages {
+        stage('Configure Gmail') {
+            steps {
+                script {
+                    // Set Gmail SMTP server details
+                    def smtpServer = "smtp.gmail.com"
+                    def smtpPort = 587
+                    def smtpUsername = "your-gmail-account@gmail.com"
+
+                    // Retrieve Gmail password from Jenkins credentials
+                    def credentials = credentials(GMAIL_CREDENTIAL_ID)
+                    def smtpPassword = credentials ? credentials : error("Credentials not found")
+
+                    // Configure email notification in Jenkins
+                    emailext attachLog: true, body: 'Build ${BUILD_NUMBER} failed. Please check the build log for details.',
+                            subject: 'Jenkins Build Failure',
+                            to: "${EMAIL_RECIPIENT}",
+                            mimeType: 'text/html',
+                            recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                            replyTo: "${smtpUsername}",
+                            from: "${smtpUsername}",
+                            attachBuildLog: true,
+                            compressLog: true,
+                            attachmentsPattern: '**/*.log',
+                            attachArtifacts: false,
+                            toFirstFailure: true,
+                            sendToIndividuals: true,
+                            smtpServer: "${smtpServer}",
+                            smtpPort: "${smtpPort}",
+                            smtpUsername: "${smtpUsername}",
+                            smtpPassword: "${smtpPassword}",
+                            contentType: 'text/html',
+                            defaultSubject: "Jenkins - ${JOB_NAME} - Build #${BUILD_NUMBER} - Failure"
+                }
+            }
+        }
